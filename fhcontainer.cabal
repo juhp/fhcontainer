@@ -1,0 +1,36 @@
+Name:                fhcontainer
+Version:             0.1
+Synopsis:            Fedora Haskell containers tool
+Description:
+    Fedora Haskell container tool
+Homepage:            https://github.com/juhp/fhcontainer
+Bug-reports:         https://github.com/juhp/fhcontainer/issues
+License:             GPL-3
+License-file:        COPYING
+Author:              Jens Petersen <petersen@fedoraproject.org>
+Maintainer:          Jens Petersen <petersen@fedoraproject.org>
+Copyright:           2018 Jens Petersen <petersen@fedoraproject.org>
+Category:            Distribution
+Build-type:          Simple
+Extra-source-files:  README.md TODO ChangeLog
+Cabal-version:       >=1.6
+Tested-with:         GHC == 7.10.3, GHC == 8.0.2, GHC == 8.2.2,
+                     GHC == 8.4.4, GHC == 8.6.3
+
+source-repository head
+  type:     git
+  location: https://github.com/fedora-haskell/fhcontainer
+
+Executable fhcontainer
+    Main-is:       Main.hs
+    Build-depends: base < 5,
+                   fedora-dists,
+                   optparse-simple,
+                   process,
+                   microlens,
+                   microlens-aeson,
+                   simple-cmd,
+                   text
+    Other-modules: Paths_fhcontainer
+    GHC-options:   -fwarn-missing-signatures -Wall
+    Extensions:    CPP
