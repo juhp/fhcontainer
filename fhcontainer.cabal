@@ -23,7 +23,9 @@ source-repository head
 
 Executable fhcontainer
     Main-is:       Main.hs
-    Build-depends: base < 5,
+    Build-depends:
+                   -- microlens-aeson fails on ghc-7.8
+                   base >= 4.8 && < 5,
                    fedora-dists,
                    optparse-simple,
                    process,
