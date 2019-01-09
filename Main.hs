@@ -1,45 +1,36 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+-- base libray
 import Control.Monad (when)
+import Data.Maybe
 import qualified Data.Text as T
-import System.Console.GetOpt (ArgDescr (..), ArgOrder (..), OptDescr (..),
-                              getOpt, usageInfo)
-import System.Environment (getArgs, getProgName)
-
-import FedoraDists
-import SimpleCmd (cmd, cmd_, cmdBool, (+-+))
+import Text.Read (readMaybe)
 
 import Lens.Micro
 import Lens.Micro.Aeson
 
+import Options.Applicative
+
+import Paths_fhcontainer (version)
+
+import FedoraDists
+import SimpleCmd (cmd, cmd_, cmdBool, {-(+-+)-})
+import SimpleCmdArgs
+#if (defined(MIN_VERSION_optparse_applicative) && MIN_VERSION_optparse_applicative(0,13,0))
+import Data.Semigroup ((<>))
+#endif
+
+data ProgOptions = ProgOptions {nameOpt :: Maybe String,
+                                pullOpt :: Bool}
+
 main :: IO ()
-main = do
-  (opts, dist, args) <- getArgs >>= parseOpts
-  runContainer opts dist args
-
-data Flag = Clean | Delete | Pull | Temp
-   deriving (Eq)
-
-options :: [OptDescr Flag]
-options =
- [ Option "" ["clean"]  (NoArg Clean)  "start a clean container"
- , Option "" ["delete"] (NoArg Delete) "delete container and exit"
- , Option "" ["pull"] (NoArg Pull) "pull latest (when creating)"
- , Option "" ["rm"] (NoArg Temp) "run a temporary container"
- ]
-
-parseOpts :: [String] -> IO ([Flag], Dist, [String])
-parseOpts argv =
-   case getOpt Permute options argv of
-      (os,d:as,[]) -> return (os,read d,as)
-      (_,_,errs) -> usage errs
+main =
+  simpleCmdArgs (Just version) "Fedora Haskell container tool" "" $
+  runContainer <$> opts <*> strArg "DIST/IMAGE/CONTAINER" <*> many (strArg "CMDARGs...")
   where
-    usage errs = do
-      prog <- getProgName
-      error' $ (if null errs then [] else concat errs ++ "\n") ++ usageInfo (header prog) options
-
-    header prog =
-      "Usage:" +-+ prog +-+ "[option] DIST [cmd]...\n"
+    opts = ProgOptions <$> 
+      optional (strOption (short 'n' <> long "name" <> metavar "NAME" <> help "Container name")) <*> 
+      switch (short 'p' <> long "pull" <> help "Pull latest image")
 
 error' :: String -> a
 #if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,9,0))
@@ -48,36 +39,38 @@ error' = errorWithoutStackTrace
 error' = error
 #endif
 
-runContainer :: [Flag] -> Dist -> [String] -> IO ()
-runContainer opts dist args = do
-  let release = releaseVersion dist
-      image = "fedora:" ++ release
-      name = "fh" ++ release
-  if Delete `elem` opts
+runContainer :: ProgOptions -> String -> [String] -> IO ()
+runContainer opts target args = do
+  let mdist = readMaybe target :: Maybe Dist
+      request = maybe target distContainer mdist
+      haveName = isJust $ nameOpt opts
+  haveContainer <- containerExists request
+  if haveContainer
     then do
-    exists <- containerExists name
-    if exists
-      then podman_ "rm" [name]
-      else putStrLn $ "Container does not exist:" +-+ name
-    else
-    if Temp `elem` opts
-    then do
-      command <- if null args then imageShell image else return args
-      when (Pull `elem` opts) $ podman_ "pull" [image]
-      podman_ "run" $ ["--rm", "-it", image] ++ command
-    else do
-    exists <- containerExists name
-    if exists
-      then
-      when (Clean `elem` opts) $ podman_ "rm" [name]
-      else do
-      command <- if null args then imageShell image else return args
-      when (Pull `elem` opts) $ podman_ "pull" [image]
-      podman_ "create" $ ["-it", "--name=" ++ name, image] ++ command
+    when haveName $
+      error' "Cannot specify name for existing container"
+    let name = request
     podman_ "start" ["-i", name]
     let com = if null args then "attach" else "exec"
     podman_ com $ name : args
     podman_ "stop" [name]
+    else do
+    let image = request
+    if (not haveName)
+      then do
+      com <- if null args then imageShell image else return args
+      when (pullOpt opts) $ podman_ "pull" [image]
+      podman_ "run" $ ["--rm", "-it", image] ++ com
+      else do
+      let name = fromJust $ nameOpt opts
+      com <- if null args then imageShell image else return args
+      when (pullOpt opts) $ podman_ "pull" [image]
+      podman_ "create" $ ["-it", "--name=" ++ name, image] ++ com
+
+distContainer :: Dist -> String
+distContainer (Fedora n) = "fedora:" ++ show n
+distContainer (EPEL n) = "centos:" ++ show n
+distContainer (RHEL n) = "rhel" ++ show n
 
 podman :: String -> [String] -> IO String
 podman c as = cmd "podman" (c:as)
@@ -89,6 +82,10 @@ podman_ c as = cmd_ "podman" (c:as)
 -- imageOfContainer name =
 --   podman "ps" ["-a", "--filter", "name=" ++ name, "--format", "{{.Image}}"]
 
+-- imageExists :: String -> IO Bool
+-- imageExists name =
+--   cmdBool "podman" ["image", "exists", name]
+
 containerExists :: String -> IO Bool
 containerExists name =
   cmdBool "podman" ["container", "exists", name]
@@ -96,7 +93,7 @@ containerExists name =
 imageShell :: String -> IO [String]
 imageShell name = do
   cfg <- podman "inspect" [name]
-  -- podman inspect ... outputs an Array of Object's
+  -- podman inspect outputs an Array of Object's
   let ccmd = cfg ^.. nth 0 . key "ContainerConfig" . key "Cmd" . stringArray  & map T.unpack
   return $ if null ccmd then ["/usr/bin/bash"] else ccmd
   where

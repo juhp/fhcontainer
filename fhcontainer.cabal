@@ -26,11 +26,11 @@ Executable fhcontainer
     Build-depends:
                    base < 5,
                    fedora-dists,
-                   optparse-simple,
-                   process,
+                   optparse-applicative,
                    microlens,
                    microlens-aeson,
                    simple-cmd,
+                   simple-cmd-args,
                    text
     Other-modules: Paths_fhcontainer
     GHC-options:   -fwarn-missing-signatures -Wall
