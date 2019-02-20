@@ -25,7 +25,7 @@ data ProgOptions = ProgOptions {nameOpt :: Maybe String,
 
 main :: IO ()
 main =
-  simpleCmdArgs (Just version) "Fedora Haskell container tool" "" $
+  simpleCmdArgs' (Just version) "Fedora Haskell container tool" "" $
   runContainer <$> opts <*> strArg "DIST/IMAGE/CONTAINER" <*> many (strArg "CMDARGs...")
   where
     opts = ProgOptions <$>
@@ -43,30 +43,38 @@ runContainer :: ProgOptions -> String -> [String] -> IO ()
 runContainer opts target args = do
   let mdist = readMaybe target :: Maybe Dist
       request = maybe target distContainer mdist
-      haveName = isJust $ nameOpt opts
+      mayName = nameOpt opts
+      givenName = isJust mayName
   mcid <- containerID request
   case mcid of
     Just cid -> do
-      when haveName $
+      when givenName $
         error' "Cannot specify name for existing container"
       podman_ "start" ["-i", cid]
-      let com = if null args then "attach" else "exec"
-      podman_ com $ cid : args
+      let (copts, cargs) = splitCtrArgs args
+      let com = if null cargs then "attach" else "exec"
+      podman_ com $ copts ++ cid : cargs
       podman_ "stop" [cid]
     Nothing -> do
       let image = request
       if pullOpt opts
-        then podmanPull image
+        then podman_ "pull" [image]
         else do
         haveImage <- imageExists image
         unless haveImage $
           podman_ "pull" [image]
-      com <- if null args then imageShell image else return args
-      if (not haveName)
-        then podman_ "run" $ ["--rm", "-it", image] ++ com
+      let (copts, cargs) = splitCtrArgs args
+      com <- if null cargs then imageShell image else return args
+      if (not givenName)
+        then podman_ "run" $ ["--rm", "-it"] ++ copts ++ image:cargs
         else do
-        let name = fromJust $ nameOpt opts
+        let name = fromJust mayName
         podman_ "create" $ ["-it", "--name=" ++ name, image] ++ com
+  where
+    splitCtrArgs :: [String] -> ([String], [String])
+    splitCtrArgs =
+      span (\ a -> a /= "" && head a == '-')
+
 
 distContainer :: Dist -> String
 distContainer (Fedora n) = "fedora:" ++ show n
@@ -78,9 +86,6 @@ podman c as = cmd "podman" (c:as)
 
 podman_ :: String -> [String] -> IO ()
 podman_ c as = cmd_ "podman" (c:as)
-
-podmanPull :: String -> IO ()
-podmanPull image = podman_ "pull" [image]
 
 -- imageOfContainer :: String -> IO String
 -- imageOfContainer name =
