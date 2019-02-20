@@ -4,6 +4,7 @@
 import Control.Monad (unless, when)
 import Data.Maybe
 import qualified Data.Text as T
+import Data.Traversable (traverse)
 import Text.Read (readMaybe)
 
 import Lens.Micro
