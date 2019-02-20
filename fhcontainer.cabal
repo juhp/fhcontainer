@@ -32,6 +32,8 @@ Executable fhcontainer
                    simple-cmd,
                    simple-cmd-args,
                    text
+    if impl(ghc<8.0)
+        Build-depends: semigroups
     Other-modules: Paths_fhcontainer
     GHC-options:   -fwarn-missing-signatures -Wall
     Extensions:    CPP
