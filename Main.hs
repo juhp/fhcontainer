@@ -105,9 +105,8 @@ containerID ::
   -- ^ name
   IO (Maybe String)
   -- ^ id
-containerID name = do
-  out <- podman "ps" ["-a", "-q", "--filter", "name=" ++ name]
-  return $ if null out then Nothing else Just out
+containerID name =
+  listToMaybe . map head . filter ((== name) . (!! 1)) . filter ((== 2) . length) . map words . lines <$> podman "ps" ["-a", "--format", "{{.ID}}  {{.Names}}", "--filter", "name=" ++ name]
 
 imageShell :: String -> IO [String]
 imageShell name = do
