@@ -66,7 +66,7 @@ runContainer opts target args = do
           podman_ "pull" [image]
       let (copts, cargs) = splitCtrArgs args
       com <- if null cargs then imageShell image else return args
-      if (not givenName)
+      if not givenName
         then podman_ "run" $ ["--rm", "-it"] ++ copts ++ image:cargs
         else do
         let name = fromJust mayName
