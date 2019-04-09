@@ -14,8 +14,8 @@ import Options.Applicative
 
 import Paths_fhcontainer (version)
 
-import FedoraDists
-import SimpleCmd (cmd, cmd_, cmdBool, {-(+-+)-})
+import FedoraDists (Dist(..))
+import SimpleCmd (cmd, cmd_, cmdBool, error')
 import SimpleCmdArgs
 #if (defined(MIN_VERSION_optparse_applicative) && MIN_VERSION_optparse_applicative(0,13,0))
 import Data.Semigroup ((<>))
@@ -26,19 +26,12 @@ data ProgOptions = ProgOptions {nameOpt :: Maybe String,
 
 main :: IO ()
 main =
-  simpleCmdArgs' (Just version) "Fedora Haskell container tool" "" $
-  runContainer <$> opts <*> strArg "DIST/IMAGE/CONTAINER" <*> many (strArg "CMDARGs...")
+  simpleCmdArgs' (Just version) "Fedora container tool" "" $
+    runContainer <$> opts <*> strArg "DIST/IMAGE/CONTAINER" <*> many (strArg "CMDARGs...")
   where
     opts = ProgOptions <$>
-      optional (strOption (short 'n' <> long "name" <> metavar "NAME" <> help "Container name")) <*> 
-      switch (short 'p' <> long "pull" <> help "Pull latest image")
-
-error' :: String -> a
-#if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,9,0))
-error' = errorWithoutStackTrace
-#else
-error' = error
-#endif
+      optional (strOptionWith 'n' "name" "NAME" "Container name") <*>
+      switchWith 'p' "pull" "Pull latest image"
 
 runContainer :: ProgOptions -> String -> [String] -> IO ()
 runContainer opts target args = do

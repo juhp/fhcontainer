@@ -29,8 +29,8 @@ Executable fhcontainer
                    optparse-applicative,
                    microlens,
                    microlens-aeson,
-                   simple-cmd,
-                   simple-cmd-args,
+                   simple-cmd >= 0.1.4,
+                   simple-cmd-args >= 0.1.1,
                    text
     if impl(ghc<8.0)
         Build-depends: semigroups
