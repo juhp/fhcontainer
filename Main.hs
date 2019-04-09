@@ -25,9 +25,11 @@ data ProgOptions = ProgOptions {nameOpt :: Maybe String,
                                 pullOpt :: Bool}
 
 main :: IO ()
-main =
+main = do
+  cmd_ "echo" ["-ne", "\ESC[22;0t"] -- save term title to title stack
   simpleCmdArgs' (Just version) "Fedora container tool" "" $
     runContainer <$> opts <*> strArg "DIST/IMAGE/CONTAINER" <*> many (strArg "CMDARGs...")
+  cmd_ "echo" ["-ne", "\ESC[23;0t"] -- restore term title from stack
   where
     opts = ProgOptions <$>
       optional (strOptionWith 'n' "name" "NAME" "Container name") <*>
