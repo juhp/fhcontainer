@@ -18,7 +18,7 @@ import FedoraDists (Dist(..))
 import SimpleCmd (cmd, cmd_, cmdBool, error')
 import SimpleCmdArgs
 #if (defined(MIN_VERSION_optparse_applicative) && MIN_VERSION_optparse_applicative(0,13,0))
-import Data.Semigroup ((<>))
+--import Data.Semigroup ((<>))
 #endif
 
 data ProgOptions = ProgOptions {nameOpt :: Maybe String,
