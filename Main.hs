@@ -72,7 +72,7 @@ runContainer opts target args = do
 distContainer :: Dist -> String
 distContainer (Fedora n) = "fedora:" ++ show n
 distContainer (EPEL n) = "centos:" ++ show n
-distContainer (RHEL n) = "rhel" ++ show n
+distContainer (RHEL n) = "ubi" ++ show n ++ "/ubi"
 
 podman :: String -> [String] -> IO String
 podman c as = cmd "podman" (c:as)
