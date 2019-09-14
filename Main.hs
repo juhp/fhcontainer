@@ -1,7 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- base libray
-import Control.Applicative (many)
+import Control.Applicative (many,
+-- remove with newer simple-cmd-args
+#if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,8,0))
+#else
+                            (<$>), (<*>)
+#endif
+                           )
 import Control.Monad (unless, when)
 import Data.Maybe
 import qualified Data.Text as T
