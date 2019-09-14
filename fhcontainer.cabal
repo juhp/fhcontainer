@@ -23,8 +23,7 @@ source-repository head
 
 Executable fhcontainer
     Main-is:       Main.hs
-    Build-depends:
-                   base < 5,
+    Build-depends: base < 5,
                    fedora-dists,
                    optparse-applicative,
                    microlens,

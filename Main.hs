@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- base libray
+import Control.Applicative (many)
 import Control.Monad (unless, when)
 import Data.Maybe
 import qualified Data.Text as T
@@ -10,16 +11,11 @@ import Text.Read (readMaybe)
 import Lens.Micro
 import Lens.Micro.Aeson
 
-import Options.Applicative
-
-import Paths_fhcontainer (version)
-
 import FedoraDists (Dist(..))
 import SimpleCmd (cmd, cmd_, cmdBool, error')
 import SimpleCmdArgs
-#if (defined(MIN_VERSION_optparse_applicative) && MIN_VERSION_optparse_applicative(0,13,0))
---import Data.Semigroup ((<>))
-#endif
+
+import Paths_fhcontainer (version)
 
 data ProgOptions = ProgOptions {nameOpt :: Maybe String,
                                 pullOpt :: Bool}
@@ -28,7 +24,7 @@ main :: IO ()
 main = do
   cmd_ "echo" ["-ne", "\ESC[22;0t"] -- save term title to title stack
   simpleCmdArgs' (Just version) "Fedora container tool" "" $
-    runContainer <$> opts <*> strArg "DIST/IMAGE/CONTAINER" <*> many (strArg "CMDARGs...")
+    runContainer <$> opts <*> strArg "DIST/IMAGE/CONTAINER" <*> many (strArg "CMD+ARGs...")
   cmd_ "echo" ["-ne", "\ESC[23;0t"] -- restore term title from stack
   where
     opts = ProgOptions <$>
@@ -53,6 +49,7 @@ runContainer opts target args = do
       podman_ "stop" [cid]
     Nothing -> do
       let image = request
+      putStrLn image
       if pullOpt opts
         then podman_ "pull" [image]
         else do
