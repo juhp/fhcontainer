@@ -25,15 +25,15 @@ source-repository head
 Executable fhcontainer
     Main-is:       Main.hs
     Build-depends: base < 5,
-                   fedora-dists,
                    optparse-applicative,
                    microlens,
                    microlens-aeson,
-                   simple-cmd >= 0.1.4,
+                   simple-cmd >= 0.2.1,
                    simple-cmd-args >= 0.1.1,
                    text
     if impl(ghc<8.0)
         Build-depends: semigroups
-    Other-modules: Paths_fhcontainer
+    Other-modules: Dist,
+                   Paths_fhcontainer
     GHC-options:   -fwarn-missing-signatures -Wall
     Extensions:    CPP

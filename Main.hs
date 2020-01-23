@@ -17,10 +17,10 @@ import Text.Read (readMaybe)
 import Lens.Micro
 import Lens.Micro.Aeson
 
-import FedoraDists (Dist(..))
-import SimpleCmd (cmd, cmd_, cmdBool, error')
+import SimpleCmd (cmd, cmd_, cmdBool, error', needProgram)
 import SimpleCmdArgs
 
+import Dist
 import Paths_fhcontainer (version)
 
 data ProgOptions = ProgOptions {nameOpt :: Maybe String,
@@ -39,6 +39,7 @@ main = do
 
 runContainer :: ProgOptions -> String -> [String] -> IO ()
 runContainer opts target args = do
+  needProgram "podman"
   let mdist = readMaybe target :: Maybe Dist
       request = maybe target distContainer mdist
       mayName = nameOpt opts
@@ -73,12 +74,6 @@ runContainer opts target args = do
     splitCtrArgs :: [String] -> ([String], [String])
     splitCtrArgs =
       span (\ a -> a /= "" && head a == '-')
-
-
-distContainer :: Dist -> String
-distContainer (Fedora n) = "fedora:" ++ show n
-distContainer (EPEL n) = "centos:" ++ show n
-distContainer (RHEL n) = "ubi" ++ show n ++ "/ubi"
 
 podman :: String -> [String] -> IO String
 podman c as = cmd "podman" (c:as)
