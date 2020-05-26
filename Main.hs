@@ -56,20 +56,23 @@ runContainer opts target args = do
       podman_ "stop" [cid]
     Nothing -> do
       let image = request
-      putStrLn image
+      putStr image
       if pullOpt opts
         then podman_ "pull" [image]
         else do
         haveImage <- imageExists image
         unless haveImage $
           podman_ "pull" [image]
+      imageId <- fromMaybe image <$> latestImage image
+      when (imageId /= image) $
+        putStrLn $ " " ++ imageId
       let (copts, cargs) = splitCtrArgs args
-      com <- if null cargs then imageShell image else return args
       if not givenName
-        then podman_ "run" $ ["--rm", "-it"] ++ copts ++ image:cargs
+        then podman_ "run" $ ["--rm", "-it"] ++ copts ++ imageId:cargs
         else do
         let name = fromJust mayName
-        podman_ "create" $ ["-it", "--name=" ++ name, image] ++ com
+        com <- if null cargs then imageShell imageId else return args
+        podman_ "create" $ ["-it", "--name=" ++ name, imageId] ++ com
   where
     splitCtrArgs :: [String] -> ([String], [String])
     splitCtrArgs =
@@ -109,3 +112,7 @@ imageShell name = do
   return $ if null ccmd then ["/usr/bin/bash"] else ccmd
   where
     stringArray = _Array . traverse . _String
+
+latestImage :: String -> IO (Maybe String)
+latestImage name =
+    listToMaybe . lines <$> podman "images" ["--format", "{{.ID}}", name]
