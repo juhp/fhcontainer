@@ -1,7 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- base libray
-import Control.Applicative (many,
+import Control.Applicative (
+#if MIN_VERSION_simple_cmd_args(0,1,4)
+#else
+  many,
+#endif
 -- remove with newer simple-cmd-args
 #if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,8,0))
 #else
@@ -11,7 +15,6 @@ import Control.Applicative (many,
 import Control.Monad (unless, when)
 import Data.Maybe
 import qualified Data.Text as T
-import Data.Traversable (traverse)
 import Text.Read (readMaybe)
 
 import Lens.Micro
