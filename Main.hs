@@ -15,6 +15,9 @@ import Control.Applicative (
 import Control.Monad (unless, when)
 import Data.Maybe
 import qualified Data.Text as T
+#if !MIN_VERSION_base(4,8,0)
+import Data.Traversable (traverse)
+#endif
 import Text.Read (readMaybe)
 
 import Lens.Micro
