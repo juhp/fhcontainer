@@ -22,4 +22,4 @@ instance Read Dist where
 distContainer :: Dist -> String
 distContainer (Fedora n) = "fedora:" ++ show n
 distContainer (Centos n) = "centos:" ++ show n
-distContainer (Ubi v) = "ubi" ++ show v ++ "/ubi"
+distContainer (Ubi v) = "ubi" ++ show v
