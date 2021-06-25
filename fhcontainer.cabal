@@ -24,6 +24,9 @@ source-repository head
 
 Executable fhcontainer
     Main-is:       Main.hs
+    Other-modules: Dist,
+                   Paths_fhcontainer
+    Hs-source-dirs: src
     Build-depends: base < 5,
                    aeson,
                    bytestring,
@@ -33,7 +36,5 @@ Executable fhcontainer
                    text
     if impl(ghc<8.0)
         Build-depends: semigroups
-    Other-modules: Dist,
-                   Paths_fhcontainer
     GHC-options:   -fwarn-missing-signatures -Wall
     Extensions:    CPP
