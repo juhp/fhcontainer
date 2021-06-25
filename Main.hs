@@ -13,16 +13,15 @@ import Control.Applicative (
 #endif
                            )
 import Control.Monad (unless, when)
+import Data.Aeson
+import Data.Aeson.Types
+import qualified Data.ByteString.Lazy.Char8 as B
 import Data.Maybe
 import qualified Data.Text as T
 #if !MIN_VERSION_base(4,8,0)
 import Data.Traversable (traverse)
 #endif
 import Text.Read (readMaybe)
-
-import Lens.Micro
-import Lens.Micro.Aeson
-
 import SimpleCmd (cmd, cmd_, cmdBool, error', needProgram)
 import SimpleCmdArgs
 
@@ -114,11 +113,18 @@ imageShell :: String -> IO [String]
 imageShell name = do
   cfg <- podman "inspect" [name]
   -- podman inspect outputs an Array of Object's
-  let ccmd = cfg ^.. nth 0 . key "ContainerConfig" . key "Cmd" . stringArray  & map T.unpack
-  return $ if null ccmd then ["/usr/bin/bash"] else ccmd
-  where
-    stringArray = _Array . traverse . _String
+  -- was ContainerConfig
+  let mccmd =
+        case decode (B.pack cfg) of
+          Just [obj] -> lookupKey "Config" obj >>= lookupKey "Cmd"
+          _ -> Nothing
+  return $ fromMaybe ["/usr/bin/bash"] mccmd
 
 latestImage :: String -> IO (Maybe String)
 latestImage name =
     listToMaybe . lines <$> podman "images" ["--format", "{{.ID}}", name]
+
+-- from http-query
+-- | Look up key in object
+lookupKey :: FromJSON a => T.Text -> Object -> Maybe a
+lookupKey k = parseMaybe (.: k)
