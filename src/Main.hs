@@ -1,17 +1,15 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 
 -- base libray
 import Control.Applicative (
-#if MIN_VERSION_simple_cmd_args(0,1,4)
-#else
+#if !MIN_VERSION_simple_cmd_args(0,1,4)
   many,
 #endif
 -- remove with newer simple-cmd-args
-#if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,8,0))
-#else
-                            (<$>), (<*>)
+#if !MIN_VERSION_base(4,8,0)
+  (<$>), (<*>)
 #endif
-                           )
+  )
 import Control.Monad (unless, when)
 import Data.Aeson
 import Data.Aeson.Types

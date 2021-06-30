@@ -37,4 +37,3 @@ Executable fhcontainer
     if impl(ghc<8.0)
         Build-depends: semigroups
     GHC-options:   -fwarn-missing-signatures -Wall
-    Extensions:    CPP
