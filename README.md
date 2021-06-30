@@ -4,3 +4,9 @@
 # Fedora Haskell Container
 
 This may eventually become a more general container tool.
+
+## Build/installation
+
+`stack install` or `cabal install`
+
+In Fedora you can also use `cabal-rpm install` for a faster build.
