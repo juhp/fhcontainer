@@ -26,66 +26,66 @@ import SimpleCmdArgs
 import Dist
 import Paths_fhcontainer (version)
 
-data ProgOptions = ProgOptions {nameOpt :: Maybe String,
-                                pullOpt :: Bool}
-
 main :: IO ()
 main = do
   cmd_ "echo" ["-ne", "\ESC[22;0t"] -- save term title to title stack
   simpleCmdArgs' (Just version) "Fedora container tool" "" $
-    runContainer <$> opts <*> strArg "DIST/IMAGE/CONTAINER" <*> many (strArg "CMD+ARGs...")
+    runContainer
+    <$> optional (strOptionWith 'n' "name" "NAME" "Container name")
+    <*> switchWith 'p' "pull" "Pull latest image"
+    <*> switchWith 'V' "verbose" "output more details"
+    <*> strArg "DIST/IMAGE/CONTAINER"
+    <*> many (strArg "CMD+ARGs...")
   cmd_ "echo" ["-ne", "\ESC[23;0t"] -- restore term title from stack
-  where
-    opts = ProgOptions <$>
-      optional (strOptionWith 'n' "name" "NAME" "Container name") <*>
-      switchWith 'p' "pull" "Pull latest image"
 
-runContainer :: ProgOptions -> String -> [String] -> IO ()
-runContainer opts target args = do
+runContainer :: Maybe String -> Bool -> Bool -> String -> [String] -> IO ()
+runContainer mname pull verbose target args = do
   needProgram "podman"
   let mdist = readMaybe target :: Maybe Dist
       request = maybe target distContainer mdist
-      mayName = nameOpt opts
-      givenName = isJust mayName
+      givenName = isJust mname
   mcid <- containerID request
   case mcid of
     Just cid -> do
       when givenName $
         error' "Cannot specify name for existing container"
-      podman_ "start" ["-i", cid]
+      podman_ verbose "start" ["-i", cid]
       let (copts, cargs) = splitCtrArgs args
       let com = if null cargs then "attach" else "exec"
-      podman_ com $ copts ++ cid : cargs
-      podman_ "stop" [cid]
+      podman_ verbose com $ copts ++ cid : cargs
+      podman_ verbose "stop" [cid]
     Nothing -> do
       let image = request
       putStr image
-      if pullOpt opts
-        then podman_ "pull" [image]
+      if pull
+        then podman_ verbose "pull" [image]
         else do
         haveImage <- imageExists image
         unless haveImage $
-          podman_ "pull" [image]
+          podman_ verbose "pull" [image]
       imageId <- fromMaybe image <$> latestImage image
       when (imageId /= image) $
         putStrLn $ " " ++ imageId
       let (copts, cargs) = splitCtrArgs args
-      if not givenName
-        then podman_ "run" $ ["--rm", "-it"] ++ copts ++ imageId:cargs
-        else do
-        let name = fromJust mayName
-        com <- if null cargs then imageShell imageId else return args
-        podman_ "create" $ ["-it", "--name=" ++ name, imageId] ++ com
+      case mname of
+        Nothing ->
+          podman_ verbose "run" $ ["--rm", "-it"] ++ copts ++ imageId:cargs
+        Just name -> do
+          com <- if null cargs then imageShell imageId else return args
+          podman_ verbose "create" $ ["-it", "--name=" ++ name, imageId] ++ com
   where
     splitCtrArgs :: [String] -> ([String], [String])
     splitCtrArgs =
       span (\ a -> a /= "" && head a == '-')
 
+podman_ :: Bool -> String -> [String] -> IO ()
+podman_ verbose c as = do
+  when verbose $
+    putStrLn $! unwords ("podman" : c : as)
+  cmd_ "podman" (c:as)
+
 podman :: String -> [String] -> IO String
 podman c as = cmd "podman" (c:as)
-
-podman_ :: String -> [String] -> IO ()
-podman_ c as = cmd_ "podman" (c:as)
 
 -- imageOfContainer :: String -> IO String
 -- imageOfContainer name =
