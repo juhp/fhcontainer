@@ -9,4 +9,5 @@ This may eventually become a more general container tool.
 
 `stack install` or `cabal install`
 
-In Fedora you can also use `cabal-rpm install` for a faster build.
+In Fedora please use `cabal-rpm builddep` to pre-install the dependencies
+for cabal-install.
