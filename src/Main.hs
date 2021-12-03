@@ -12,6 +12,9 @@ import Control.Applicative (
   )
 import Control.Monad (unless, when)
 import Data.Aeson
+#if MIN_VERSION_aeson(2,0,0)
+import Data.Aeson.Key (fromText)
+#endif
 import Data.Aeson.Types
 import qualified Data.ByteString.Lazy.Char8 as B
 import Data.Maybe
@@ -125,4 +128,9 @@ latestImage name =
 -- from http-query
 -- | Look up key in object
 lookupKey :: FromJSON a => T.Text -> Object -> Maybe a
-lookupKey k = parseMaybe (.: k)
+lookupKey k = parseMaybe (.: fromText k)
+#if !MIN_VERSION_aeson(2,0,0)
+  where
+    fromText :: T.Text -> T.Text
+    fromText = id
+#endif
