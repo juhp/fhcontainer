@@ -1,6 +1,5 @@
 {-# LANGUAGE CPP, OverloadedStrings #-}
 
--- base libray
 import Control.Applicative (
 #if !MIN_VERSION_simple_cmd_args(0,1,4)
   many,
@@ -19,9 +18,6 @@ import Data.Aeson.Types
 import qualified Data.ByteString.Lazy.Char8 as B
 import Data.Maybe
 import qualified Data.Text as T
-#if !MIN_VERSION_base(4,8,0)
-import Data.Traversable (traverse)
-#endif
 import Text.Read (readMaybe)
 import SimpleCmd (cmd, cmd_, cmdBool, error', needProgram)
 import SimpleCmdArgs
