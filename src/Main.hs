@@ -29,7 +29,6 @@ import Paths_fhcontainer (version)
 -- FIXME --list command: lists local available images and containers
 main :: IO ()
 main = do
-  cmd_ "echo" ["-ne", "\ESC[22;0t"] -- save term title to title stack
   simpleCmdArgs' (Just version) "Fedora container tool" "" $
     runContainer
     <$> optional (strOptionWith 'n' "name" "NAME" "Container name")
@@ -39,7 +38,6 @@ main = do
     <*> (flagWith' Nothing 'l' "list" "List local images" <|>
          Just <$> strArg "DIST/IMAGE/CONTAINER")
     <*> many (strArg "CMD+ARGs...")
-  cmd_ "echo" ["-ne", "\ESC[23;0t"] -- restore term title from stack
 
 runContainer :: Maybe String -> Bool -> Bool -> Maybe String -> Maybe String
              -> [String] -> IO ()
@@ -57,6 +55,7 @@ runContainer mname pull verbose mmount mtarget args = do
           request = maybe target distContainer mdist
           givenName = isJust mname
       mcid <- containerID request
+      cmd_ "echo" ["-ne", "\ESC[22;0t"] -- save term title to title stack
       case mcid of
         Just cid -> do
           when givenName $
@@ -88,6 +87,7 @@ runContainer mname pull verbose mmount mtarget args = do
             Just name -> do
               com <- if null cargs then imageShell imageId else return args
               podman_ verbose "create" $ vol ++ ["-it", "--name=" ++ name, imageId] ++ com
+      cmd_ "echo" ["-ne", "\ESC[23;0t"] -- restore term title from stack
   where
     splitCtrArgs :: [String] -> ([String], [String])
     splitCtrArgs =
