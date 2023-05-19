@@ -2,7 +2,7 @@ Name:                fhcontainer
 Version:             0.2
 Synopsis:            Fedora Haskell containers tool
 Description:
-    Fedora Haskell container tool
+    A small tool for quickly running temporary containers.
 Homepage:            https://github.com/juhp/fhcontainer
 Bug-reports:         https://github.com/juhp/fhcontainer/issues
 License:             GPL-3
