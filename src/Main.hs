@@ -16,7 +16,7 @@ import Data.Aeson.Key (fromText)
 #endif
 import Data.Aeson.Types
 import qualified Data.ByteString.Lazy.Char8 as B
-import Data.List.Extra (breakEnd, groupSort, intercalate, sort)
+import Data.List.Extra (breakEnd, groupSort, intercalate, sort, word1)
 import Data.Maybe
 import qualified Data.Text as T
 import Text.Read (readMaybe)
@@ -120,7 +120,7 @@ containerID ::
   IO (Maybe String)
   -- ^ id
 containerID name =
-  listToMaybe . map head . filter ((== name) . (!! 1)) . filter ((== 2) . length) . map words . lines <$> podman "ps" ["-a", "--format", "{{.ID}}  {{.Names}}", "--filter", "name=" ++ name]
+  listToMaybe . map fst . filter ((== name) . snd) . map word1 . lines <$> podman "ps" ["-a", "--noheading", "--format", "{{.ID}}  {{.Names}}", "--filter", "name=" ++ name]
 
 imageShell :: String -> IO [String]
 imageShell name = do
