@@ -9,7 +9,7 @@ import Control.Applicative (
   (<$>), (<*>)
 #endif
   )
-import Control.Monad (unless, when)
+import Control.Monad.Extra (unless, when, whenJust)
 import Data.Aeson
 #if MIN_VERSION_aeson(2,0,0)
 import Data.Aeson.Key (fromText)
@@ -33,12 +33,14 @@ main = do
     <$> optional (strOptionWith 'n' "name" "NAME" "Container name")
     <*> switchWith 'p' "pull" "Pull latest image"
     <*> switchWith 'V' "verbose" "output more details"
+    <*> optional (strOptionWith 'm' "mount" "DIR" "mount directory into container")
     <*> strArg "DIST/IMAGE/CONTAINER"
     <*> many (strArg "CMD+ARGs...")
   cmd_ "echo" ["-ne", "\ESC[23;0t"] -- restore term title from stack
 
-runContainer :: Maybe String -> Bool -> Bool -> String -> [String] -> IO ()
-runContainer mname pull verbose target args = do
+runContainer :: Maybe String -> Bool -> Bool -> Maybe String -> String
+             -> [String] -> IO ()
+runContainer mname pull verbose mmount target args = do
   needProgram "podman"
   let mdist = readMaybe target :: Maybe Dist
       request = maybe target distContainer mdist
@@ -48,6 +50,8 @@ runContainer mname pull verbose target args = do
     Just cid -> do
       when givenName $
         error' "Cannot specify name for existing container"
+      whenJust mmount $ const $
+        error' "Cannot mount volume in existing container"
       podman_ verbose "start" ["-i", cid]
       let (copts, cargs) = splitCtrArgs args
       let com = if null cargs then "attach" else "exec"
@@ -63,15 +67,16 @@ runContainer mname pull verbose target args = do
         unless haveImage $
           podman_ verbose "pull" [image]
       imageId <- fromMaybe image <$> latestImage image
+      let vol = maybe [] (\dir -> ["--volume", dir ++ if ':' `elem` dir then "" else ":/mnt"]) mmount
       when (imageId /= image) $
         putStrLn $ " " ++ imageId
       let (copts, cargs) = splitCtrArgs args
       case mname of
         Nothing ->
-          podman_ verbose "run" $ ["--rm", "-it"] ++ copts ++ imageId:cargs
+          podman_ verbose "run" $ ["--rm", "-it"] ++ vol ++ copts ++ imageId:cargs
         Just name -> do
           com <- if null cargs then imageShell imageId else return args
-          podman_ verbose "create" $ ["-it", "--name=" ++ name, imageId] ++ com
+          podman_ verbose "create" $ vol ++ ["-it", "--name=" ++ name, imageId] ++ com
   where
     splitCtrArgs :: [String] -> ([String], [String])
     splitCtrArgs =
