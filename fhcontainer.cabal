@@ -24,8 +24,11 @@ source-repository head
 
 Executable fhcontainer
     Main-is:       Main.hs
-    Other-modules: Dist,
+    Other-modules: Dist
+                   List
                    Paths_fhcontainer
+                   Podman
+                   Run
     Hs-source-dirs: src
     Build-depends: base < 5,
                    aeson,
