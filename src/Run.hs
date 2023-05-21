@@ -21,14 +21,12 @@ import Podman
 runCmd :: Maybe String -> Bool -> Bool -> Maybe String -> String
        -> [String] -> IO ()
 runCmd mname pull verbose mmount target args = do
-  let mdist = readMaybe target :: Maybe Dist
-      request = maybe target distContainer mdist
-      givenName = isJust mname
+  let request = maybe target distContainer $ readMaybe target
   mcid <- containerID request
   cmd_ "echo" ["-ne", "\ESC[22;0t"] -- save term title to title stack
   case mcid of
     Just cid -> do
-      when givenName $
+      when (isJust mname) $
         error' "Cannot specify name for existing container"
       whenJust mmount $ const $
         error' "Cannot mount volume in existing container"
