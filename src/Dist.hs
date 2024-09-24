@@ -25,5 +25,6 @@ instance Read Dist where
 distContainer :: Dist -> String
 distContainer (Fedora n) = "fedora:" ++ show n
 distContainer (Centos n) = "centos:" ++ show n
-distContainer (CentosStream n) = "centos:stream" ++ show n
+distContainer (CentosStream n) =
+  "centos:stream" ++ show n ++ if n == 10 then "-development" else ""
 distContainer (Ubi v) = "ubi" ++ show v
