@@ -4,13 +4,27 @@
 # "Fedora Haskell" Container tool
 This may eventually become a more general container tool.
 
-# Usage
+## Examples
+
+```shellsession
+$ fhcontainer f42
+fedora:42 a4ce01130677
+2024-09-19 15:42:49 +0800
+[root@ed803b975b3c /]#
+```
+
+More example invocations:
+
 ```shellsession
 $ fhcontainer f40
 $ fhcontainer c9s
 $ fhcontainer debian
 $ fhcontainer --list
 ```
+
+You can use `--pull` to refresh an existing container image.
+
+## Usage
 
 `$ fhcontainer --version`
 
