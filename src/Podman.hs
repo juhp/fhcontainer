@@ -6,11 +6,12 @@ module Podman (
   containerID,
   imageExists,
   imageShell,
-  latestImage
+  latestImage,
+  displayImageDate
   )
 where
 
-import Control.Monad (when)
+import Control.Monad.Extra (when, whenJust)
 import Data.Aeson
 #if MIN_VERSION_aeson(2,0,0)
 import Data.Aeson.Key (fromText)
@@ -19,11 +20,25 @@ import Data.Aeson.Types
 import qualified Data.ByteString.Lazy.Char8 as B
 import Data.List.Extra (word1)
 import Data.Maybe (fromMaybe, listToMaybe)
-import SimpleCmd (cmd, cmd_, cmdBool)
 import qualified Data.Text as T
+import Data.Time.Format (defaultTimeLocale, formatTime)
+import Data.Time.LocalTime (utcToLocalZonedTime)
+import SimpleCmd (cmd_, cmdBool, error')
+import System.Process.Typed (proc, readProcess,
+#if MIN_VERSION_typed_process(0,2,8)
+                             ExitCode(ExitSuccess)
+#endif
+                            )
+#if !MIN_VERSION_typed_process(0,2,8)
+import System.Exit (ExitCode(ExitSuccess))
+#endif
 
-podman :: String -> [String] -> IO String
-podman c as = cmd "podman" (c:as)
+podman :: String -> [String] -> IO B.ByteString
+podman c as = do
+  (ok,out,err) <- readProcess $ proc "podman" (c:as)
+  if ok == ExitSuccess
+    then return out
+    else error' $ B.unpack err
 
 podman_ :: Bool -> String -> [String] -> IO ()
 podman_ verbose c as = do
@@ -47,7 +62,7 @@ imageExists name =
 containerID :: String -- ^ name
             -> IO (Maybe String) -- ^ id
 containerID name =
-  listToMaybe . map fst . filter ((== name) . snd) . map word1 . lines <$> podman "ps" ["-a", "--noheading", "--format", "{{.ID}}  {{.Names}}", "--filter", "name=" ++ name]
+  listToMaybe . map fst . filter ((== name) . snd) . map (word1 . B.unpack) . B.lines <$> podman "ps" ["-a", "--noheading", "--format", "{{.ID}}  {{.Names}}", "--filter", "name=" ++ name]
 
 imageShell :: String -> IO [String]
 imageShell name = do
@@ -55,14 +70,14 @@ imageShell name = do
   -- podman inspect outputs an Array of Object's
   -- was ContainerConfig
   let mccmd =
-        case decode (B.pack cfg) of
+        case decode cfg of
           Just [obj] -> lookupKey "Config" obj >>= lookupKey "Cmd"
           _ -> Nothing
   return $ fromMaybe ["/usr/bin/bash"] mccmd
 
 latestImage :: String -> IO (Maybe String)
 latestImage name =
-    listToMaybe . lines <$> podman "images" ["--format", "{{.ID}}", name]
+    fmap B.unpack . listToMaybe . B.lines <$> podman "images" ["--format", "{{.ID}}", name]
 
 -- from http-query
 -- | Look up key in object
@@ -73,3 +88,17 @@ lookupKey k = parseMaybe (.: fromText k)
     fromText :: T.Text -> T.Text
     fromText = id
 #endif
+
+displayImageDate :: String -> IO ()
+displayImageDate image = do
+  cfg <- podman "inspect" [image]
+  -- podman inspect outputs an Array of Object's
+  -- was ContainerConfig
+  case decode cfg of
+    Just [obj] ->
+      whenJust (lookupKey "Created" obj) printTime
+    _ -> return ()
+  where
+    printTime u = do
+      t <- utcToLocalZonedTime u
+      putStrLn $ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S %z" t

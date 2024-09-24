@@ -39,6 +39,7 @@ runCmd mname pull verbose mmount target args = do
       let vol = maybe [] (\dir -> ["--volume", dir ++ if ':' `elem` dir then "" else ":/mnt"]) mmount
       when (imageId /= image) $
         putStrLn $ " " ++ imageId
+      displayImageDate imageId
       let (copts, cargs) = splitCtrArgs args
       case mname of
         Nothing ->
