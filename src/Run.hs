@@ -3,6 +3,7 @@ module Run (runCmd) where
 import Control.Monad.Extra (unless, when, whenJust)
 import Data.Maybe (isJust, fromMaybe)
 import Text.Read (readMaybe)
+import Safe (headMay)
 import SimpleCmd (cmd_, error')
 
 import Dist
@@ -49,4 +50,4 @@ runCmd mname pull verbose mmount target args = do
   where
     splitCtrArgs :: [String] -> ([String], [String])
     splitCtrArgs =
-      span (\ a -> a /= "" && head a == '-')
+      span (\ a -> a /= "" && headMay a == Just '-')

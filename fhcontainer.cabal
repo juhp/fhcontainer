@@ -35,6 +35,7 @@ Executable fhcontainer
                    bytestring,
                    extra,
                    optparse-applicative,
+                   safe,
                    simple-cmd >= 0.2.1,
                    simple-cmd-args >= 0.1.3,
                    text
