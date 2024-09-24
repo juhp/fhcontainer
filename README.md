@@ -6,13 +6,17 @@ This may eventually become a more general container tool.
 
 # Usage
 ```shellsession
-$ fhcontainer f38
+$ fhcontainer f40
+$ fhcontainer c9s
 $ fhcontainer debian
 $ fhcontainer --list
 ```
 
-```shellsession
-$ fhcontainer --help
+`$ fhcontainer --version`
+
+`$ fhcontainer --help`
+
+```
 Fedora container tool
 
 Usage: fhcontainer [--version] [-n|--name NAME] [-p|--pull] [-V|--verbose]
