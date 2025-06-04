@@ -16,25 +16,29 @@ fedora:42 a4ce01130677
 More example invocations:
 
 ```shellsession
-$ fhcontainer f40
-$ fhcontainer c9s
+$ fhcontainer f41
+$ fhcontainer c10s
 $ fhcontainer debian
 $ fhcontainer --list
 ```
 
-You can use `--pull` to refresh an existing container image.
+You can use `--pull` (`-p`) to refresh an existing container image.
 
 ## Usage
 
 `$ fhcontainer --version`
+
+```
+0.2.1
+```
 
 `$ fhcontainer --help`
 
 ```
 Fedora container tool
 
-Usage: fhcontainer [--version] [-n|--name NAME] [-p|--pull] [-V|--verbose]
-                   [-m|--mount DIR] ((-l|--list) | DIST/IMAGE/CONTAINER)
+Usage: fhcontainer [--version] [-n|--name NAME] [-p|--pull] [-V|--verbose] 
+                   [-m|--mount DIR] ((-l|--list) | DIST/IMAGE/CONTAINER) 
                    [CMD+ARGs...]
 
 Available options:
