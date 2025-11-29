@@ -26,6 +26,13 @@ data Dist = Fedora Natural -- ^ Fedora release
 parseNat :: Parser Natural
 parseNat = read <$> many1 digit
 
+parseWithColon :: Parser Dist
+parseWithColon = do
+  content <- lookAhead (many anyChar)
+  if ':' `elem` content
+      then Other <$> many1 anyChar
+      else parserZero
+
 parseFedora :: Parser Dist
 parseFedora = Fedora <$> (char 'f' *> parseNat)
 
@@ -56,6 +63,7 @@ parseOther = Other <$> many1 anyChar
 -- FIXME also handle bare numbers
 parseDist :: Parser Dist
 parseDist =
+  parseWithColon <|>
   exact parseFedora <|>
   exact parseELN <|>
   exact parseCentos <|>
