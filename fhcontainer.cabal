@@ -16,7 +16,7 @@ Extra-source-files:  README.md TODO ChangeLog.md
 Cabal-version:       >=1.6
 Tested-with:         GHC == 8.6.5, GHC == 8.8.4, GHC == 8.10.7,
                      GHC == 9.0.2, GHC == 8.2.8, GHC == 9.4.8,
-                     GHC == 9.6.7, GHC == 9.8.2, GHC == 9.10.2
+                     GHC == 9.6.7, GHC == 9.8.4, GHC == 9.10.3
 
 source-repository head
   type:     git
@@ -35,6 +35,7 @@ Executable fhcontainer
                    bytestring,
                    extra,
                    optparse-applicative,
+                   parsec,
                    safe,
                    simple-cmd >= 0.2.1,
                    simple-cmd-args >= 0.1.3,

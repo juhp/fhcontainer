@@ -2,7 +2,6 @@ module Run (runCmd) where
 
 import Control.Monad.Extra (unless, when, whenJust)
 import Data.Maybe (isJust, fromMaybe)
-import Text.Read (readMaybe)
 import Safe (headMay)
 import SimpleCmd (cmd_, error')
 
@@ -12,7 +11,7 @@ import Podman
 runCmd :: Maybe String -> Bool -> Bool -> Maybe String -> String
        -> [String] -> IO ()
 runCmd mname pull verbose mmount target args = do
-  let request = maybe target distContainer $ readMaybe target
+  let request = distContainer $ readDist target
   mcid <- containerID request
   cmd_ "echo" ["-ne", "\ESC[22;0t"] -- save term title to title stack
   case mcid of
