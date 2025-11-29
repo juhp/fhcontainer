@@ -55,8 +55,15 @@ parseOther = Other <$> many1 anyChar
 
 -- FIXME also handle bare numbers
 parseDist :: Parser Dist
-parseDist = try parseFedora <|> try parseELN <|> try parseCentos
-            <|> try parseUbi <|> parseVersion <|> parseOther
+parseDist =
+  exact parseFedora <|>
+  exact parseELN <|>
+  exact parseCentos <|>
+  exact parseUbi <|>
+  exact parseVersion <|>
+  parseOther
+  where
+    exact p = try p <* eof
 
 readDist :: String -> Dist
 readDist s =
