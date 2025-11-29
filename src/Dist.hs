@@ -6,7 +6,9 @@ module Dist where
 import Control.Applicative ((<$>), (*>))
 #endif
 
+#if MIN_VERSION_extra(1,7,13)
 import Data.Monoid.Extra (mwhen)
+#endif
 import Text.Parsec
 import Text.Parsec.String (Parser)
 import Data.Functor (($>))
@@ -66,7 +68,11 @@ distContainer :: Dist -> String
 distContainer (Fedora n) = "fedora:" ++ show n
 distContainer ELN = "registry.fedoraproject.org/eln:latest"
 -- FIXME make 11 default to development
-distContainer (Centos n d m) = "centos:stream" ++ show n ++ (mwhen d "-development") ++ (mwhen m "-minimal")
+distContainer (Centos n d m) = "centos:stream" ++ show n ++ mwhen d "-development" ++ mwhen m "-minimal"
+#if !MIN_VERSION_extra(1,7,13)
+  where
+    mwhen b mnd = if b then mnd else mempty
+#endif
 distContainer (VersionNumber n) =
   distContainer $
   case compare n 11 of
