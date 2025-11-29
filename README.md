@@ -16,8 +16,9 @@ fedora:42 a4ce01130677
 More example invocations:
 
 ```shellsession
-$ fhcontainer f41
+$ fhcontainer 43
 $ fhcontainer c10s
+$ fhcontainer c10-development
 $ fhcontainer debian
 $ fhcontainer --list
 ```
@@ -29,7 +30,7 @@ You can use `--pull` (`-p`) to refresh an existing container image.
 `$ fhcontainer --version`
 
 ```
-0.2.1
+0.3
 ```
 
 `$ fhcontainer --help`
