@@ -35,7 +35,7 @@ parseELN = string "eln" $> ELN
 parseCentos :: Parser Dist
 parseCentos =
   Centos
-  <$> (longShort "centos" 'c' *> parseNat) -- version
+  <$> (longShort "centos" 'c' *> parseNat <* optional (char 's')) -- version
   <*> option False (longShort "-devel" 'd' $> True)
   <*> option False (longShort "-minimal" 'm' $> True)
   where
