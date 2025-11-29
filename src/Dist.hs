@@ -91,8 +91,13 @@ distContainer (Centos n d m) = "centos:stream" ++ show n ++ mwhen d "-developmen
 distContainer (VersionNumber n) =
   distContainer $
   case compare n 11 of
-    LT -> Centos n False False
+    LT ->
+      -- FIXME centos:5 was initial container
+      if n < 8
+      then Other $ "centos:" ++ show n
+      else Centos n False False
     EQ -> ELN
+    -- FIXME check rawhide version
     GT -> Fedora n
 distContainer (Ubi v) = "ubi" ++ show v
 distContainer (Other s) = s
