@@ -28,9 +28,13 @@ parseFedora = Fedora <$> (char 'f' *> parseNat)
 parseCentos :: Parser Dist
 parseCentos =
   Centos
-  <$> (char 'c' *> parseNat)          -- version
-  <*> option False (char 'd' $> True) -- development
-  <*> option False (char 'm' $> True) -- minimal
+  <$> (longShort "centos" 'c' *> parseNat) -- version
+  <*> option False (longShort "-devel" 'd' $> True)
+  <*> option False (longShort "-minimal" 'm' $> True)
+  where
+    longShort :: String -> Char -> Parser String
+    longShort str c =
+      try (string str) <|> string [c]
 
 parseUbi :: Parser Dist
 parseUbi = Ubi <$> (string "ubi" *> parseNat)
