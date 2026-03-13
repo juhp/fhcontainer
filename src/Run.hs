@@ -35,7 +35,8 @@ runCmd mname pull verbose mmount target args = do
         unless haveImage $
           podman_ verbose "pull" [image]
       imageId <- fromMaybe image <$> latestImage image
-      let vol = maybe [] (\dir -> ["--volume", dir ++ if ':' `elem` dir then "" else ":/mnt"]) mmount
+      -- FIXME analyse `dir` and append ":Z" if missing
+      let vol = maybe [] (\dir -> ["--volume", dir ++ if ':' `elem` dir then "" else ":/mnt:Z"]) mmount
       when (imageId /= image) $
         putStrLn $ " " ++ imageId
       displayImageDate imageId

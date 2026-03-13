@@ -9,7 +9,7 @@ License:             GPL-3
 License-file:        COPYING
 Author:              Jens Petersen <petersen@fedoraproject.org>
 Maintainer:          Jens Petersen <petersen@fedoraproject.org>
-Copyright:           2018-2025 Jens Petersen <petersen@fedoraproject.org>
+Copyright:           2018-2026 Jens Petersen <petersen@fedoraproject.org>
 Category:            Distribution
 Build-type:          Simple
 Extra-source-files:  README.md TODO ChangeLog.md
