@@ -4,12 +4,15 @@
 # "Fedora Haskell" Container tool
 This may eventually become a more general container tool.
 
+(Apart from being written in Haskell and designed for Fedora/Centos,
+actually nothing specific to do with "Fedora Haskell".)
+
 ## Examples
 
 ```shellsession
-$ fhcontainer f42
-fedora:42 a4ce01130677
-2024-09-19 15:42:49 +0800
+$ fhcontainer f44
+fedora:44 a4ce01130677
+2026-02-19 15:42:49 +0800
 [root@ed803b975b3c /]#
 ```
 
@@ -19,6 +22,8 @@ More example invocations:
 $ fhcontainer 43
 $ fhcontainer c10s
 $ fhcontainer c10-development
+$ fhcontainer 11  # runs fedora:eln
+$ fhcontainer 10  # runs centos:stream10
 $ fhcontainer debian
 $ fhcontainer --list
 ```
@@ -30,7 +35,7 @@ You can use `--pull` (`-p`) to refresh an existing container image.
 `$ fhcontainer --version`
 
 ```
-0.3
+0.3.1
 ```
 
 `$ fhcontainer --help`
@@ -38,8 +43,8 @@ You can use `--pull` (`-p`) to refresh an existing container image.
 ```
 Fedora container tool
 
-Usage: fhcontainer [--version] [-n|--name NAME] [-p|--pull] [-V|--verbose] 
-                   [-m|--mount DIR] ((-l|--list) | DIST/IMAGE/CONTAINER) 
+Usage: fhcontainer [--version] [-n|--name NAME] [-p|--pull] [-V|--verbose]
+                   [-m|--mount DIR] ((-l|--list) | DIST/IMAGE/CONTAINER)
                    [CMD+ARGs...]
 
 Available options:
