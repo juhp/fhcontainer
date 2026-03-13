@@ -1,5 +1,10 @@
 # Release Changes
 
+## 0.3.1 (2026-03-13)
+- `--mount`: append ":Z" for private namespace mapping
+- map n < 8 to centos:n
+- Dist parser: ignore container targets with ":"
+
 ## 0.3 (2025-11-29)
 - use parsec to read distro: support centos devel/minimal
 - also handle pure version numbers and eln
